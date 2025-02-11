@@ -741,6 +741,9 @@ const resetWebhooks = () => {
 
 const _getFilePath = (fileName: string): string => {
   const root = "generated";
+  if (!fs.existsSync(root)) {
+    fs.mkdirSync(root, { recursive: true });
+  }
   if (fileName.includes(root)) return fileName;
   return `generated/${fileName}`;
 };
