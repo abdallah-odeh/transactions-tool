@@ -3,7 +3,6 @@ import { CSVParser } from "./helpers/csv-parser";
 import * as fs from "fs";
 import { TransactionsGeneratorHelper } from "./helpers/transactions-generator.helper";
 import path from "path";
-import { webhookToken } from "./data/webhook-token";
 
 const startProgram = async () => {
   do {
@@ -97,7 +96,6 @@ const hitWebhooks = async () => {
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
   myHeaders.append("Accept", "application/json");
-  myHeaders.append("Authorization", webhookToken);
 
   try {
     const fsPromis = fs.promises;
