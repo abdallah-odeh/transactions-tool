@@ -119,8 +119,8 @@ const generateTransactions = async () => {
 };
 
 const hitWebhooks = async () => {
-  const filePath = "generated/webhooks.json";
-  if (!fs.existsSync(filePath)) {
+  const filePath = "webhooks.json";
+  if (!FilesHelper.exists(filePath)) {
     console.error("Webhooks file not found, aborting ..");
     console.log("=========================\n");
     return;

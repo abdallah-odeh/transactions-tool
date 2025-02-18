@@ -109,6 +109,12 @@ export class Transaction {
       description = "Card Unload";
     }
 
+    if (this.messageClass == ClassMessage.reversalOrChargeBack) {
+      const temp = surplusBefore;
+      surplusBefore = surplusAfter;
+      surplusAfter = temp;
+    }
+
     return [
       "R", // <- Record type
       this.transactionID,

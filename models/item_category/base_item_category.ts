@@ -47,6 +47,14 @@ export abstract class BaseItemCategory {
     this.code = args.code;
   }
 
+  /*
+
+      hasAuth: false,
+      hasSettlement: true,
+      isDirectSettlment: false,
+      isFullRefund: false,
+      isPartialRefund: true,
+  */
   displayName(): string {
     const flags = [this.name];
     if (this.isRefund()) {
@@ -318,7 +326,7 @@ export abstract class BaseItemCategory {
   }
 
   isRefund(): boolean {
-    return this.isFullRefund || this.isFullRefund;
+    return this.isFullRefund || this.isPartialRefund;
   }
 }
 

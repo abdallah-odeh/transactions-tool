@@ -51,6 +51,10 @@ export const FilesHelper = {
   deleteFile: (path: string) => {
     fs.unlinkSync(path);
   },
+
+  exists: (path: string): boolean => {
+    return fs.existsSync(_getFilePath(path));
+  },
 };
 
 const _getFilePath = (fileName: string): string => {
