@@ -49,9 +49,9 @@ export class Transaction {
     this.rrn = now;
     this.itemCategory = options.itemCategory;
     if (options?.prepareAsWebhook == true) {
-      this.transactionID = `15${now.substring(now.length - 4, now.length)}`;
+      this.transactionID = `T15${now.substring(now.length - 4, now.length)}`;
     } else {
-      this.transactionID = `12${now.substring(now.length - 4, now.length)}`;
+      this.transactionID = `T12${now.substring(now.length - 4, now.length)}`;
     }
     this.date = DateFormatterHelper.format(
       options.transactionDate ?? new Date(),
@@ -190,7 +190,7 @@ export class Transaction {
       accountNumber: this.card?.account_number,
       Date: this.date,
       Time: this.time,
-      otb: otb,
+      otb: otb.toFixed(2),
       transactionCode: this.transactionCode.toString(),
       messageClass: this.messageClass.toString(),
       RRN: this.rrn,
