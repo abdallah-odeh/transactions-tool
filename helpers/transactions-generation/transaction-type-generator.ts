@@ -1,23 +1,29 @@
-import { itemCategories, transactionsTypes } from "../../data/data";
+import { itemCategories } from "../../data/data";
 import { BaseItemCategory } from "../../models/item_category/base_item_category";
-import { TransactionsTypes } from "../../models/transaction_type";
 import { ConsoleHelper } from "../console-helper";
-import { TransactionsGeneratorHelper } from "../transactions-generator.helper";
 
 export const TransactionsCategoriesGenerator = {
   generate: async (): Promise<Array<BaseItemCategory>> => {
     console.log("\n=========================");
     console.log("What transaction categories do you want in the file?");
+    console.log(`0.\tAll`);
     for (var i = 0; i < itemCategories.length; i++) {
       console.log(`${i + 1}.\t${itemCategories[i].displayName()}`);
     }
-    const types = await ConsoleHelper.read(
+    let types = await ConsoleHelper.read(
       "Enter types (separated by commas) i.e. 1,3,4"
     );
 
     if (types.length == 0) {
       console.error("Invalid types\n");
       return TransactionsCategoriesGenerator.generate();
+    }
+
+    if (types == "0") {
+      types = Array.from(
+        { length: itemCategories.length },
+        (_, i) => i + 1
+      ).join(",");
     }
 
     const input = types.split(",").map((e) => Number.parseInt(e) - 1);

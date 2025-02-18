@@ -1,4 +1,10 @@
-import { LocalPurchaseAuth, LocalPurchaseDirectSettlement, LocalPurchaseAuthSettlment, LocalPurchaseReversal, LocalPurchasePartialRefund, LocalPurchaseFullRefund } from "../models/item_category/domestic/domestic-purchase";
+import {
+  LocalPurchaseAuth,
+  LocalPurchaseAuthSettlment,
+  LocalPurchaseReversal,
+  LocalPurchasePartialRefund,
+  LocalPurchaseFullRefund,
+} from "../models/item_category/domestic/domestic-purchase";
 import {
   LocalATMWithdrawalAuth,
   LocalATMWithdrawalDirectSettlement,
@@ -14,8 +20,6 @@ import {
   InternationalATMWithdrawalRefund,
 } from "../models/item_category/international/international-atm-withdrawal";
 import {
-  InternationalPurchaseAuth,
-  InternationalPurchaseDirectSettlement,
   InternationalPurchase,
   InternationalPurchaseReversal,
   InternationalPurchaseFullRefund,
@@ -26,7 +30,6 @@ import {
   Currencies,
   ItemCategory,
   TransactionCode,
-  TransactionsTypes,
   TransactionType,
 } from "../models/transaction_type";
 import { TransactionCategory } from "./types";
@@ -50,23 +53,6 @@ export const transactionTypes = [
   // TransactionType.creditFee,
   // TransactionType.vat,
 ];
-export const transactionsTypes = [
-  TransactionsTypes.internationalAuthRev, //✅
-  TransactionsTypes.internationalATMWithdrawal, //✅
-  TransactionsTypes.internationalATMWithdrawalReversal, //✅
-  TransactionsTypes.internationalPurchase, //✅
-  TransactionsTypes.internationalPurchasePartialRefund, //✅
-  TransactionsTypes.internationalPurchaseFullRefund, 
-  TransactionsTypes.domesticAuth, 
-  TransactionsTypes.domesticAuthRev,
-  TransactionsTypes.domesticATMWithdrawal,
-  TransactionsTypes.domesticATMWithdrawalRefund,
-  TransactionsTypes.domesticATMWithdrawalDirectSettlement,
-  TransactionsTypes.domesticATMWithdrawalReversalDirectSettlement,
-  TransactionsTypes.domesticPurchase,
-  TransactionsTypes.domesticPurchasePartialRefund,
-  TransactionsTypes.domesticPurchaseFullRefund,
-];
 
 export const itemCategories = [
   new LocalPurchaseAuth(),
@@ -89,17 +75,6 @@ export const itemCategories = [
   new InternationalPurchase(),
   new InternationalPurchasePartialRefund(),
   new InternationalPurchaseFullRefund(),
-
-  // new InternationalPurchaseAuth(),
-  // new InternationalPurchaseDirectSettlement(),
-
-  // new InternationalATMWithdrawalAuth(),
-  // new InternationalATMWithdrawalDirectSettlement(),
-  // new InternationalATMWithdrawalRefund(),
-
-  // new LocalPurchaseDirectSettlement(),
-
-  // new LocalATMWithdrawalAuth(),
 ];
 export const transactionsCode = [
   TransactionCode.purchase,

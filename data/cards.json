@@ -6,7 +6,8 @@
         "vpan": "9001000004545245",
         "masked_pan": "401778_5245",
         "account_id": "6826000000000327",
-        "account_number": "6826000000000327"
+        "account_number": "6826000000000327",
+        "balance": 850000
       }
     ]
   },
@@ -17,25 +18,29 @@
         "vpan": "9001000000385674",
         "masked_pan": "401778_5674",
         "account_id": "0000010723",
-        "account_number": "6826000000000020"
+        "account_number": "6826000000000020",
+        "balance": 280000
       },
       {
         "vpan": "",
         "masked_pan": "",
         "account_id": "0000010707",
-        "account_number": "6829000000000014"
+        "account_number": "6829000000000014",
+        "balance": 250000
       },
       {
         "vpan": "",
         "masked_pan": "",
         "account_id": "0000010721",
-        "account_number": "6826000000000017"
+        "account_number": "6826000000000017",
+        "balance": 320000
       },
       {
         "vpan": "9001000000291519",
         "masked_pan": "401778_1519",
         "account_id": "0000010717",
-        "account_number": "6826000000000013"
+        "account_number": "6826000000000013",
+        "balance": 430000
       }
     ]
   },
@@ -46,7 +51,8 @@
         "vpan": "9001000000385674",
         "masked_pan": "401778_5674",
         "account_id": "0000010723",
-        "account_number": "6826000000000020"
+        "account_number": "6826000000000020",
+        "balance": 400000
       }
     ]
   }

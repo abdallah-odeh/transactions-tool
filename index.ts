@@ -5,11 +5,25 @@ import { TransactionsGeneratorHelper } from "./helpers/transactions-generator.he
 import path from "path";
 import { ProviderGenerator } from "./helpers/transactions-generation/provider-generator";
 import { RecordsCountGenerator } from "./helpers/transactions-generation/records-count-generator";
-import { ClassMessageGenerator } from "./helpers/transactions-generation/class-message-helper";
 import { TransactionsCategoriesGenerator } from "./helpers/transactions-generation/transaction-type-generator";
 import { AmountGenerator } from "./helpers/transactions-generation/amount-generator";
 import { DatesGenerator } from "./helpers/transactions-generation/date-generator";
 import { CardsGenerator } from "./helpers/transactions-generation/cards-generator";
+import { FilesHelper } from "./helpers/files.helper";
+import { DateFormatterHelper } from "./helpers/date-formatter.helper";
+import { Transaction } from "./models/transaction";
+import {
+  ClassMessage,
+  TransactionCode,
+  TransactionsTypes,
+  TransactionType,
+} from "./models/transaction_type";
+import {
+  CardLoad,
+  CardUnLoad,
+} from "./models/item_category/base_item_category";
+import { currencies } from "./data/data";
+import { columns } from "./data/file_info";
 
 const startProgram = async () => {
   do {
@@ -21,6 +35,7 @@ const startProgram = async () => {
     console.info("3. Generate transactions to .csv file");
     console.info("4. Hit cached webhooks inside generated/webhooks.json");
     console.info("5. Convert generated .csv files to .txt");
+    console.info("6. Convert CardLoad/UnLoad webhooks into transactions");
     const program = await ConsoleHelper.read("Enter process number: ");
     console.log("\n=========================");
 
@@ -39,6 +54,9 @@ const startProgram = async () => {
         break;
       case "5":
         await convertGeneratedFileToTxt();
+        break;
+      case "6":
+        await convertWebhooksToTransactions();
         break;
       default:
         console.error("Invalid choice. Please try again");
@@ -113,9 +131,7 @@ const hitWebhooks = async () => {
   myHeaders.append("Accept", "application/json");
 
   try {
-    const fsPromis = fs.promises;
-
-    const fileContent = await fsPromis.readFile(filePath, "utf-8");
+    const fileContent = await FilesHelper.read(filePath);
     const webhooks = JSON.parse(fileContent);
 
     console.info(`There are ${webhooks.length} webhooks to hit`);
@@ -157,4 +173,60 @@ const convertGeneratedFileToTxt = async () => {
     if (!filePath.endsWith("csv")) return;
     convertCSVFile(filePath);
   });
+};
+
+const convertWebhooksToTransactions = async () => {
+  const filePath = "webhooks.json";
+  await FilesHelper.write(filePath, "[]");
+  console.log(
+    `Please enter the webhooks you want to convert into the file: ${filePath}`
+  );
+  await ConsoleHelper.read("Type anything when you are done..");
+  const content = await FilesHelper.read(filePath);
+  const webhooks = JSON.parse(content);
+  const date = new Date();
+
+  const formattedDate = DateFormatterHelper.format(date, "yyyyMMdd");
+  const fileName = `TransactionsSync_${formattedDate}.csv`;
+
+  const header = columns.map((e) => e[0]).join(",");
+  const transactions = [header];
+
+  const categories = [new CardLoad(), new CardUnLoad()];
+  const transactionsCodes = [TransactionCode.cashIn, TransactionCode.cashOut];
+
+  for (var i = 0; i < webhooks.length; i++) {
+    const webhook = webhooks[i];
+    const amount = Number.parseFloat(webhook.amount);
+    const date = DateFormatterHelper.parse(webhook.date, "yyyyMMdd");
+    const transaction = new Transaction({
+      transactionType: TransactionType.transaction,
+      amount: amount,
+      messageClass: ClassMessage.financial,
+      transactionCode: transactionsCodes.find(
+        (e) => e.toString() == webhook.transactionCode
+      )!,
+      card: {
+        account_id: webhook.accountId,
+        account_number: webhook.accountNumber,
+        balance: Number.parseFloat(webhook.otb) + amount,
+      },
+      itemCategory: categories.find((e) => e.code == webhook.transactionType)!,
+      currency: currencies.find((e) => e == webhook.currency)!,
+      transactionDate: date,
+    });
+    transaction.transactionID = webhook.transactionId;
+    transaction.settlementDate = date;
+
+    transactions.push(transaction.asRow());
+  }
+  const footer = [
+    "F",
+    transactions.length - 1,
+    ...Array(columns.length - 2),
+  ].join(",");
+
+  transactions.push(footer);
+
+  await FilesHelper.write(fileName, transactions.join("\n"));
 };

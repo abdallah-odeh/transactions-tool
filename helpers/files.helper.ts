@@ -7,6 +7,12 @@ export const FilesHelper = {
     fs.writeFileSync(filePath, newContent);
   },
 
+  read: async (path: string): Promise<string> => {
+    const fsPromis = fs.promises;
+
+    return await fsPromis.readFile(_getFilePath(path), "utf-8");
+  },
+
   updateContent: async (path: string, content: string[]) => {
     if (content.length == 0) return;
     const filePath = _getFilePath(path);

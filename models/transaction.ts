@@ -1,12 +1,14 @@
 import { DateFormatterHelper } from "../helpers/date-formatter.helper";
-import { BaseItemCategory } from "./item_category/base_item_category";
+import {
+  BaseItemCategory,
+  CardLoad,
+  CardUnLoad,
+} from "./item_category/base_item_category";
 import {
   ClassMessage,
-  ItemCategory,
   TransactionCode,
   TransactionType,
   Currencies,
-  ItemCategoryUtils,
 } from "./transaction_type";
 
 export class Transaction {
@@ -93,6 +95,20 @@ export class Transaction {
   }
 
   asRow(): string {
+    let surplusBefore = 0;
+    let surplusAfter = 0;
+    if (this.card.balance) {
+      surplusBefore = this.card.balance;
+      surplusAfter = this.card.balance - this.amount;
+    }
+
+    let description = "Generated transaction";
+    if (this.itemCategory instanceof CardLoad) {
+      description = "Card load";
+    } else if (this.itemCategory instanceof CardUnLoad) {
+      description = "Card Unload";
+    }
+
     return [
       "R", // <- Record type
       this.transactionID,
@@ -128,7 +144,7 @@ export class Transaction {
       this.itemCategory.code, // <- Item Category
       this.rrn, // <- RRN
       "0", // <- STAN
-      "Generated transaction", // <- Description
+      description, // <- Description
       "CARD ACCEPTOR~ATM Riyadh~CITY NAME~             682", // <- Card Acceptor Location
       "0", // <- MCC
       "", // <- Card Acceptor ID
@@ -149,20 +165,22 @@ export class Transaction {
       "0", // <- Original Transaction Id
       "", // <- Original Transaction Reference
       "0", // <- Balance Before
-      "", // <- Surplus Before HERE
+      surplusBefore.toFixed(2), // <- Surplus Before
       "0", // <- Balance After
-      "0", // <- Surplus After HERE
+      surplusAfter.toFixed(2), // <- Surplus After
       this.messageClass == ClassMessage.reversalOrChargeBack ? "C" : "D", // <- Credit Debit (C | D)
       "0", // <- Application Sequence
     ].join(",");
   }
 
-  asWebhook(fees: number, vatOnFees: number): any {
+  asWebhook(args: { fees: number; vatOnFees: number; otb?: number }): any {
     if (this.authIdResponse == undefined) {
       this.authIdResponse = Math.floor(Math.random() * 1000000)
         .toString()
         .padStart(6, "0");
     }
+    const otb =
+      args.otb ?? this.card.balance - this.amount + args.fees + args.vatOnFees;
     return {
       InstId: "9000",
       cardId: this.card?.vpan ?? "",
@@ -172,7 +190,7 @@ export class Transaction {
       accountNumber: this.card?.account_number,
       Date: this.date,
       Time: this.time,
-      otb: "439.73",
+      otb: otb,
       transactionCode: this.transactionCode.toString(),
       messageClass: this.messageClass.toString(),
       RRN: this.rrn,
@@ -190,9 +208,10 @@ export class Transaction {
       billingCurrency: Currencies.sar,
       settlementAmount: "0.00",
       settlementCurrency: Currencies.sar,
-      fees: fees.toFixed(2),
-      vatOnFees: vatOnFees.toFixed(2),
+      fees: args.fees.toFixed(2),
+      vatOnFees: args.vatOnFees.toFixed(2),
       posEntryMode: "9",
+      sign: this.messageClass == ClassMessage.reversalOrChargeBack ? "C" : "D",
       authIdResponse: this.authIdResponse,
       POSCDIM: "9",
     };

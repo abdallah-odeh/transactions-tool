@@ -24,6 +24,8 @@ export enum TransactionCode {
   cash = 1,
   feeCollection = 19,
   paymentToCardholder = 26,
+  cashIn = 4001,
+  cashOut = 4000,
 }
 
 export enum ItemCategory {

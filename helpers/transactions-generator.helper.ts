@@ -50,7 +50,7 @@ export const TransactionsGeneratorHelper = {
         amount: amount,
         transactionType: generate(transactionTypes),
         transactionCode: generate(transactionsCode),
-        card: generate(options.cards),
+        card: card,
         date: date,
       });
 
@@ -59,6 +59,8 @@ export const TransactionsGeneratorHelper = {
           transaction.webhooks.length
         }`
       );
+
+      card.balance = card.balance - amount;
 
       file!.transactions.push(...transaction.transactions);
       await appendWebhook(transaction.webhooks);
