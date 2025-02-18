@@ -3,6 +3,13 @@ import { CSVParser } from "./helpers/csv-parser";
 import * as fs from "fs";
 import { TransactionsGeneratorHelper } from "./helpers/transactions-generator.helper";
 import path from "path";
+import { ProviderGenerator } from "./helpers/transactions-generation/provider-generator";
+import { RecordsCountGenerator } from "./helpers/transactions-generation/records-count-generator";
+import { ClassMessageGenerator } from "./helpers/transactions-generation/class-message-helper";
+import { TransactionsCategoriesGenerator } from "./helpers/transactions-generation/transaction-type-generator";
+import { AmountGenerator } from "./helpers/transactions-generation/amount-generator";
+import { DatesGenerator } from "./helpers/transactions-generation/date-generator";
+import { CardsGenerator } from "./helpers/transactions-generation/cards-generator";
 
 const startProgram = async () => {
   do {
@@ -74,25 +81,33 @@ const convertFixedLengthFile = async () => {
 };
 
 const generateTransactions = async () => {
-  const provider = await TransactionsGeneratorHelper.getProvider();
-  const records = await TransactionsGeneratorHelper.getRecordsCount();
-  const types = await TransactionsGeneratorHelper.getTypesOfTransactions();
-  const amountRange = await TransactionsGeneratorHelper.getAmountRange();
-  const dateRange = await TransactionsGeneratorHelper.getDateRange();
-  const cards = await TransactionsGeneratorHelper.getCards();
+  const provider = await ProviderGenerator.generate();
+  const records = await RecordsCountGenerator.generate();
+  // const classes = await ClassMessageGenerator.generate();
+  const categories = await TransactionsCategoriesGenerator.generate();
+  const amountRange = await AmountGenerator.generate();
+  const dateRange = await DatesGenerator.generate();
+  const cards = await CardsGenerator.generate();
 
-  await TransactionsGeneratorHelper.generate(
-    provider,
-    records,
-    types,
-    amountRange,
-    dateRange,
-    cards
-  );
+  await TransactionsGeneratorHelper.generate({
+    provider: provider,
+    records: records,
+    // types: classes,
+    categories: categories,
+    amount: amountRange,
+    date: dateRange,
+    cards: cards,
+  });
 };
 
 const hitWebhooks = async () => {
   const filePath = "generated/webhooks.json";
+  if (!fs.existsSync(filePath)) {
+    console.error("Webhooks file not found, aborting ..");
+    console.log("=========================\n");
+    return;
+  }
+
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
   myHeaders.append("Accept", "application/json");

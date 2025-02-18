@@ -1,4 +1,5 @@
 import { DateFormatterHelper } from "../helpers/date-formatter.helper";
+import { BaseItemCategory } from "./item_category/base_item_category";
 import {
   ClassMessage,
   ItemCategory,
@@ -23,8 +24,8 @@ export class Transaction {
   date: string;
   time: string;
   transactionDate?: Date;
-  itemCategory: ItemCategory;
-  currency?: Currencies;
+  itemCategory: BaseItemCategory;
+  currency: Currencies;
 
   constructor(options: {
     transactionType: TransactionType;
@@ -32,9 +33,10 @@ export class Transaction {
     messageClass: ClassMessage;
     transactionCode: TransactionCode;
     card: any;
-    itemCategory: ItemCategory;
+    itemCategory: BaseItemCategory;
     transactionDate?: Date;
     currency?: Currencies;
+    prepareAsWebhook?: boolean;
   }) {
     const now = process.hrtime.bigint().toString();
     this.transactionType = options.transactionType;
@@ -43,8 +45,12 @@ export class Transaction {
     this.transactionCode = options.transactionCode;
     this.card = options.card;
     this.rrn = now;
-    (this.itemCategory = options.itemCategory),
-      (this.transactionID = `14${now.substring(now.length - 4, now.length)}`);
+    this.itemCategory = options.itemCategory;
+    if (options?.prepareAsWebhook == true) {
+      this.transactionID = `15${now.substring(now.length - 4, now.length)}`;
+    } else {
+      this.transactionID = `12${now.substring(now.length - 4, now.length)}`;
+    }
     this.date = DateFormatterHelper.format(
       options.transactionDate ?? new Date(),
       "yyyyMMdd"
@@ -53,7 +59,7 @@ export class Transaction {
       options.transactionDate ?? new Date(),
       "hhmmss"
     );
-    this.currency = options.currency;
+    this.currency = options.currency ?? Currencies.sar;
   }
 
   handleTransactionID(transactionId?: string) {
@@ -79,12 +85,19 @@ export class Transaction {
     }
   }
 
+  setChildOf(transaction?: Transaction) {
+    if (transaction == null) return;
+    this.authorizationTransactionLogID = transaction.transactionID;
+    this.authIdResponse = transaction.authIdResponse;
+    this.handleTransactionID(transaction.transactionID);
+  }
+
   asRow(): string {
     return [
       "R", // <- Record type
       this.transactionID,
       this.transactionType,
-      this.currency ?? Currencies.sar, // <- Transaction currency
+      this.currency, // <- Transaction currency
       this.amount?.toFixed(2), // <- Transaction amount
       Currencies.sar, // <- Billing currency
       this.amount?.toFixed(2), // <- Billing amount
@@ -112,7 +125,7 @@ export class Transaction {
       "", // <- ARN
       "", // <- Token Requestor ID
       this.authorizationTransactionLogID ?? "00000000000000000000",
-      "0131", // <- Item Category
+      this.itemCategory.code, // <- Item Category
       this.rrn, // <- RRN
       "0", // <- STAN
       "Generated transaction", // <- Description
@@ -139,7 +152,7 @@ export class Transaction {
       "", // <- Surplus Before HERE
       "0", // <- Balance After
       "0", // <- Surplus After HERE
-      "", // <- Credit Debit
+      this.messageClass == ClassMessage.reversalOrChargeBack ? "C" : "D", // <- Credit Debit (C | D)
       "0", // <- Application Sequence
     ].join(",");
   }

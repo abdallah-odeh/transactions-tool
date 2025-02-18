@@ -2,12 +2,17 @@ import { format as formatter, parse as parser } from "date-fns";
 
 export const DateFormatterHelper = {
   format: (date: Date, format: string = "dd/MM/yyyy"): string => {
-    return formatter(date, format);
     try {
       return formatter(date, format);
     } catch (e) {
       console.error(`Could not format date ${date} in ${format}\n${e}`);
-      return formatter(date, format);
+      const day = date.getDate();
+      const month = date.getMonth();
+      const year = date.getFullYear();
+      return format
+        .replace("yyyy", year.toString().padStart(4, "0"))
+        .replace("MM", month.toString().padStart(2, "0"))
+        .replace("dd", day.toString().padStart(2, "0"));
     }
   },
 

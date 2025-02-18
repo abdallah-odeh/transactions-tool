@@ -15,7 +15,7 @@ export enum TransactionType {
 export enum ClassMessage {
   authorization = 1,
   financial = 2, // settlement
-  fileUpdate = 3, // rev
+  // fileUpdate = 3, // rev
   reversalOrChargeBack = 4, // refund
 }
 
@@ -60,7 +60,23 @@ export enum Currencies {
   inr = "356",
 }
 
-export const currencies = [Currencies.sar, Currencies.inr];
+export enum TransactionsTypes {
+  domesticAuth = "Domestic Auth",
+  domesticAuthRev = "Domestic Auth Reversal",
+  domesticATMWithdrawal = "Domestic ATM Withdrawal",
+  domesticATMWithdrawalRefund = "Domestic ATM Withdrawal Refund",
+  domesticATMWithdrawalDirectSettlement = "Domestic ATM Withdrawal (Direct Settlement)",
+  domesticATMWithdrawalReversalDirectSettlement = "Domestic ATM Withdrawal Reversal (Direct Settlement)",
+  domesticPurchase = "Domestic Purchase",
+  domesticPurchasePartialRefund = "Domestic Purchase Partial Refund",
+  domesticPurchaseFullRefund = "Domestic Purchase Full Refund",
+  internationalAuthRev = "International Auth Reversal",
+  internationalATMWithdrawal = "International ATM Withdrawal",
+  internationalATMWithdrawalReversal = "International ATM Withdrawal Reversal",
+  internationalPurchase = "International Purchase",
+  internationalPurchasePartialRefund = "International Purchase Partial Refund",
+  internationalPurchaseFullRefund = "International Purchase Full Refund",
+}
 
 export class ItemCategoryInfo {
   isInternational: boolean;

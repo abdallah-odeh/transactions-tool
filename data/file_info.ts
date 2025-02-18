@@ -1,4 +1,4 @@
-type Column = [string, string, number];
+import { Column } from "./types";
 
 export const columns: Column[] = [
   ["RecordType", "string", 1],
