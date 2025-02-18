@@ -90,7 +90,7 @@ export abstract class BaseItemCategory {
     const transactions = [];
     const currency = this.getCurrency();
 
-    const amount = args.amount;
+    let amount = args.amount;
 
     const fee = this.getFee(amount);
     const feeVAT = this.getVAT(fee);
@@ -111,7 +111,7 @@ export abstract class BaseItemCategory {
       //should add webhook of type authorization
       auth = new Transaction({
         transactionType: args.transactionType,
-        amount: args.amount,
+        amount: amount,
         messageClass: ClassMessage.authorization,
         transactionCode: args.transactionCode,
         card: args.card,
@@ -125,7 +125,7 @@ export abstract class BaseItemCategory {
       //should add webhook of type settlement
       auth = new Transaction({
         transactionType: args.transactionType,
-        amount: args.amount,
+        amount: amount,
         messageClass: ClassMessage.financial,
         transactionCode: args.transactionCode,
         card: args.card,
@@ -140,7 +140,7 @@ export abstract class BaseItemCategory {
       // should add sync file transactions
       const transaction = new Transaction({
         transactionType: args.transactionType,
-        amount: args.amount,
+        amount: amount,
         messageClass: ClassMessage.financial,
         transactionCode: args.transactionCode,
         card: args.card,
@@ -212,11 +212,15 @@ export abstract class BaseItemCategory {
       }
     }
     if (this.isRefund()) {
+      if (this.isPartialRefund) {
+        amount = Math.random() * amount;
+      }
+
       if ((this.hasAuth || this.isDirectSettlment) && !this.hasSettlement) {
         // should add reversal webhook
         const rev = new Transaction({
           transactionType: args.transactionType,
-          amount: args.amount,
+          amount: amount,
           messageClass: ClassMessage.reversalOrChargeBack,
           transactionCode: args.transactionCode,
           card: args.card,
@@ -233,7 +237,7 @@ export abstract class BaseItemCategory {
 
         const transaction = new Transaction({
           transactionType: args.transactionType,
-          amount: args.amount,
+          amount: amount,
           messageClass: ClassMessage.reversalOrChargeBack,
           transactionCode: args.transactionCode,
           card: args.card,
