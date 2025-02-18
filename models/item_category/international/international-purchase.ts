@@ -60,7 +60,7 @@ export class InternationalPurchasePartialRefund extends BaseInternationalPurchas
     super({
       hasAuth: false,
       hasSettlement: true,
-      isDirectSettlment: true,
+      isDirectSettlment: false,
       isFullRefund: false,
       isPartialRefund: true,
       code: "0009",
@@ -72,7 +72,7 @@ export class InternationalPurchaseFullRefund extends BaseInternationalPurchase {
     super({
       hasAuth: false,
       hasSettlement: true,
-      isDirectSettlment: true,
+      isDirectSettlment: false,
       isFullRefund: true,
       isPartialRefund: false,
       code: "0009",

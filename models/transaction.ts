@@ -124,10 +124,14 @@ export class Transaction {
       Currencies.sar, // <- Billing currency
       this.amount?.toFixed(2), // <- Billing amount
       DateFormatterHelper.tryFormat(this.settlementDate, "yyyyMMdd") ?? "", // <- Settlement date
-      this.messageClass == ClassMessage.financial
+      this.messageClass == ClassMessage.financial ||
+      this.messageClass == ClassMessage.reversalOrChargeBack
         ? this.amount?.toFixed(2)
         : "", // <- Settlement amount
-      this.messageClass == ClassMessage.financial ? Currencies.sar : "", //SAR // <- Settlement currency
+      this.messageClass == ClassMessage.financial ||
+      this.messageClass == ClassMessage.reversalOrChargeBack
+        ? Currencies.sar
+        : "", //SAR // <- Settlement currency
       this.date, // <- System date
       this.card.account_number ?? "", // <- Account number
       this.card.account_id ?? "", // <- Account id
