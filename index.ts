@@ -197,28 +197,89 @@ const convertWebhooksToTransactions = async () => {
 
   for (var i = 0; i < webhooks.length; i++) {
     const webhook = webhooks[i];
-    const amount = Number.parseFloat(webhook.amount);
-    const date = DateFormatterHelper.parse(webhook.date, "yyyyMMdd");
-    const transaction = new Transaction({
-      transactionType: TransactionType.transaction,
-      amount: amount,
-      messageClass: ClassMessage.financial,
-      transactionCode: transactionsCodes.find(
-        (e) => e.toString() == webhook.transactionCode
-      )!,
-      card: {
-        account_id: webhook.accountId,
-        account_number: webhook.accountNumber,
-        balance: Number.parseFloat(webhook.otb) + amount,
-      },
-      itemCategory: categories.find((e) => e.code == webhook.transactionType)!,
-      currency: currencies.find((e) => e == webhook.currency)!,
-      transactionDate: date,
-    });
-    transaction.transactionID = webhook.transactionId;
-    transaction.settlementDate = date;
+    const now = process.hrtime.bigint().toString();
 
-    transactions.push(transaction.asRow());
+    let transactionType = "1";
+    let description = "Converted transaction";
+    if (webhook.transactionCode == "4000") {
+      transactionType = "1";
+      description = "Cash in";
+    } else if (webhook.transactionCode == "4001") {
+      transactionType = "1";
+      description = "Cash in";
+    } else if (webhook.transactionCode == "0") {
+      transactionType = "0";
+      description = "Converted purchase";
+    } else if (webhook.transactionCode == "19") {
+      transactionType = "0";
+      description = "Converted fee collection";
+    } else if (webhook.transactionCode == "26") {
+      transactionType = "1";
+      description = "Converted payment to card holder";
+    }
+
+    const row = [
+      "R", // <- Record type
+      webhook.transactionId,
+      transactionType,
+      webhook.currency, // <- Transaction currency
+      webhook.amount, // <- Transaction amount
+      webhook.currency, // <- Billing currency
+      webhook.amount, // <- Billing amount
+      webhook.date, // <- Settlement date
+      webhook.amount, // <- Settlement amount
+      webhook.currency, //SAR // <- Settlement currency
+      webhook.date, // <- System date
+      webhook.accountNumber, // <- Account number
+      webhook.accountId, // <- Account id
+      webhook.cardId ?? "", // <- VPAN
+      webhook.cardMaskedNumber ?? "", // <- Masked VPAN
+      webhook.date, // <- Date transmit
+      webhook.time, // <- Time transmit
+      webhook.date, // <- Date local
+      webhook.time, // <- Time local
+      webhook.messageClass ?? "", // <- Message class
+      "2", // <- Message function
+      "0", // <- Transaction source
+      "00200", // <- Function code
+      webhook.transactionCode, // <- Transaction Code
+      "", // <- Acquirer Financial Entity
+      "", // <- Transaction Reference Number
+      "", // <- ARN
+      "", // <- Token Requestor ID
+      "00000000000000000000",
+      webhook.transactionType, // <- Item Category
+      webhook.rrn ?? now, // <- RRN
+      webhook.stan ?? "0", // <- STAN
+      description, // <- Description
+      `CARD ACCEPTOR~ATM Riyadh~CITY NAME~             ${webhook.currency}`, // <- Card Acceptor Location
+      "0", // <- MCC
+      "", // <- Card Acceptor ID
+      "", // <- Terminal Code
+      "", // <- Acquirer ID
+      "", // <- Acquirer Country
+      "", // <- Card Data Input Capability
+      "", // <- Cardholder Authentication Availability
+      "", // <- Card Capture Capability
+      "", // <- Operating Environment
+      "", // <- Cardholder Present Indicator
+      "", // <- Card Present Indicator
+      "", // <- Card Data Input Mode
+      "", // <- Cardholder Authentication Method
+      "", // <- Cardholder authorization Entity
+      "", // <- Pin Capture Capability
+      webhook.parentTransactionId ?? webhook.transactionId ?? "", // <- Reference
+      "0", // <- Original Transaction Id
+      "", // <- Original Transaction Reference
+      "0", // <- Balance Before
+      Number.parseFloat(webhook.otb) + Number.parseFloat(webhook.amount), // <- Surplus Before
+      "0", // <- Balance After
+      webhook.otb, // <- Surplus After
+      webhook.sign == "C" ? "C" : "D", // <- Credit Debit (C | D)
+      "0", // <- Application Sequence
+    ].join(",");
+
+    transactions.push(row);
   }
   const footer = [
     "F",

@@ -1,4 +1,4 @@
-import { Currencies } from "../../transaction_type";
+import { Currencies, TransactionCode } from "../../transaction_type";
 import { BaseItemCategory } from "../base_item_category";
 
 export abstract class BaseInternationalATMWithdrawal extends BaseItemCategory {
@@ -27,6 +27,14 @@ export abstract class BaseInternationalATMWithdrawal extends BaseItemCategory {
 
   getFee(amount: number): number {
     return 30;
+  }
+
+  transactionCode(): TransactionCode {
+    return TransactionCode.cash;
+  }
+
+  refundTransactionCode(): TransactionCode {
+    return this.transactionCode();
   }
 }
 
@@ -68,7 +76,9 @@ export class InternationalATMWithdrawalAuth extends BaseInternationalATMWithdraw
   }
 }
 export class InternationalATMWithdrawalReversal extends BaseInternationalATMWithdrawal {
-  constructor() {
+  changeTransactionCode: boolean;
+
+  constructor(args: { changeTransactionCode: boolean }) {
     super({
       hasAuth: true,
       hasSettlement: false,
@@ -77,10 +87,21 @@ export class InternationalATMWithdrawalReversal extends BaseInternationalATMWith
       isPartialRefund: false,
       code: "0014",
     });
+    this.changeTransactionCode = args.changeTransactionCode;
+  }
+  refundTransactionCode(): TransactionCode {
+    if (this.changeTransactionCode) return TransactionCode.return;
+    return super.refundTransactionCode();
+  }
+
+  displayName(): string {
+    return `${super.displayName()} (Transaction code ${this.refundTransactionCode()})`;
   }
 }
 export class InternationalATMWithdrawalRefund extends BaseInternationalATMWithdrawal {
-  constructor() {
+  changeTransactionCode: boolean;
+
+  constructor(args: { changeTransactionCode: boolean }) {
     super({
       hasAuth: false,
       hasSettlement: true,
@@ -89,5 +110,14 @@ export class InternationalATMWithdrawalRefund extends BaseInternationalATMWithdr
       isPartialRefund: false,
       code: "0014",
     });
+    this.changeTransactionCode = args.changeTransactionCode;
+  }
+  refundTransactionCode(): TransactionCode {
+    if (this.changeTransactionCode) return TransactionCode.return;
+    return super.refundTransactionCode();
+  }
+
+  displayName(): string {
+    return `${super.displayName()} (Transaction code ${this.refundTransactionCode()})`;
   }
 }

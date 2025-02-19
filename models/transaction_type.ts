@@ -23,6 +23,7 @@ export enum TransactionCode {
   purchase = 0,
   cash = 1,
   feeCollection = 19,
+  return = 20,
   paymentToCardholder = 26,
   cashIn = 4001,
   cashOut = 4000,

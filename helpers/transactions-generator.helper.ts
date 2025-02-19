@@ -49,7 +49,6 @@ export const TransactionsGeneratorHelper = {
       const transaction = category.getRecords({
         amount: amount,
         transactionType: generate(transactionTypes),
-        transactionCode: generate(transactionsCode),
         card: card,
         date: date,
       });

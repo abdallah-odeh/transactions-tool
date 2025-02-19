@@ -56,25 +56,34 @@ export const transactionTypes = [
 
 export const itemCategories = [
   new LocalPurchaseAuth(),
-  new LocalPurchaseReversal(),
+  new LocalPurchaseReversal({ changeTransactionCode: false }),
+  new LocalPurchaseReversal({ changeTransactionCode: true }),
 
-  new InternationalPurchaseReversal(),
+  new InternationalPurchaseReversal({ changeTransactionCode: false }),
+  new InternationalPurchaseReversal({ changeTransactionCode: true }),
 
   new LocalATMWithdrawal(),
-  new LocalATMWithdrawalRefund(),
+  new LocalATMWithdrawalRefund({ changeTransactionCode: false }),
+  new LocalATMWithdrawalRefund({ changeTransactionCode: true }),
   new LocalATMWithdrawalDirectSettlement(),
-  new LocalATMWithdrawalReversal(), //direct settlement
+  new LocalATMWithdrawalReversal({ changeTransactionCode: false }), //direct settlement
+  new LocalATMWithdrawalReversal({ changeTransactionCode: true }), //direct settlement
 
   new InternationalATMWithdrawal(),
-  new InternationalATMWithdrawalReversal(),
+  new InternationalATMWithdrawalReversal({ changeTransactionCode: false }),
+  new InternationalATMWithdrawalReversal({ changeTransactionCode: true }),
 
   new LocalPurchaseAuthSettlment(),
-  new LocalPurchasePartialRefund(),
-  new LocalPurchaseFullRefund(),
+  new LocalPurchasePartialRefund({ changeTransactionCode: false }),
+  new LocalPurchasePartialRefund({ changeTransactionCode: true }),
+  new LocalPurchaseFullRefund({ changeTransactionCode: false }),
+  new LocalPurchaseFullRefund({ changeTransactionCode: true }),
 
   new InternationalPurchase(),
-  new InternationalPurchasePartialRefund(),
-  new InternationalPurchaseFullRefund(),
+  new InternationalPurchasePartialRefund({ changeTransactionCode: false }),
+  new InternationalPurchasePartialRefund({ changeTransactionCode: true }),
+  new InternationalPurchaseFullRefund({ changeTransactionCode: false }),
+  new InternationalPurchaseFullRefund({ changeTransactionCode: true }),
 ];
 export const transactionsCode = [
   TransactionCode.purchase,

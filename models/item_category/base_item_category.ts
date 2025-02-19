@@ -1,3 +1,4 @@
+import { generate } from "../../data/data";
 import { Transaction } from "../transaction";
 import {
   ClassMessage,
@@ -9,7 +10,6 @@ import {
 export type TransactionParams = {
   amount: number;
   transactionType: TransactionType;
-  transactionCode: TransactionCode;
   card: any;
   date?: Date;
   currency?: Currencies;
@@ -47,14 +47,6 @@ export abstract class BaseItemCategory {
     this.code = args.code;
   }
 
-  /*
-
-      hasAuth: false,
-      hasSettlement: true,
-      isDirectSettlment: false,
-      isFullRefund: false,
-      isPartialRefund: true,
-  */
   displayName(): string {
     const flags = [this.name];
     if (this.isRefund()) {
@@ -85,6 +77,7 @@ export abstract class BaseItemCategory {
 
     return flags.join(" ");
   }
+
   getRecords(args: TransactionParams): Records {
     const webhooks = [];
     const transactions = [];
@@ -102,10 +95,8 @@ export abstract class BaseItemCategory {
     const totalVAT = this.getVAT(totalFee);
 
     let auth: Transaction | undefined;
-    let transactionCode = args.transactionCode;
-    if (this.name.toLowerCase().includes("atm")) {
-      transactionCode = TransactionCode.cash;
-    }
+    let settlement: Transaction | undefined;
+    const transactionCode = this.transactionCode();
 
     if (this.hasAuth) {
       //should add webhook of type authorization
@@ -113,7 +104,7 @@ export abstract class BaseItemCategory {
         transactionType: args.transactionType,
         amount: amount,
         messageClass: ClassMessage.authorization,
-        transactionCode: args.transactionCode,
+        transactionCode: transactionCode,
         card: args.card,
         itemCategory: this,
         currency: currency,
@@ -127,7 +118,7 @@ export abstract class BaseItemCategory {
         transactionType: args.transactionType,
         amount: amount,
         messageClass: ClassMessage.financial,
-        transactionCode: args.transactionCode,
+        transactionCode: transactionCode,
         card: args.card,
         itemCategory: this,
         currency: currency,
@@ -138,18 +129,18 @@ export abstract class BaseItemCategory {
     }
     if (this.hasSettlement) {
       // should add sync file transactions
-      const transaction = new Transaction({
+      settlement = new Transaction({
         transactionType: args.transactionType,
         amount: amount,
         messageClass: ClassMessage.financial,
-        transactionCode: args.transactionCode,
+        transactionCode: transactionCode,
         card: args.card,
         itemCategory: this,
         currency: currency,
         transactionDate: args.date,
       });
-      transaction.setChildOf(auth);
-      transactions.push(transaction.asRow());
+      settlement.setChildOf(auth);
+      transactions.push(settlement.asRow());
 
       // fees
       if (fee > 0) {
@@ -157,7 +148,7 @@ export abstract class BaseItemCategory {
           transactionType: TransactionType.fee,
           amount: fee,
           messageClass: ClassMessage.financial,
-          transactionCode: args.transactionCode,
+          transactionCode: TransactionCode.feeCollection,
           card: args.card,
           itemCategory: this,
           currency: currency,
@@ -167,7 +158,7 @@ export abstract class BaseItemCategory {
           transactionType: TransactionType.vat,
           amount: feeVAT,
           messageClass: ClassMessage.financial,
-          transactionCode: args.transactionCode,
+          transactionCode: transactionCode,
           card: args.card,
           itemCategory: this,
           currency: currency,
@@ -187,7 +178,7 @@ export abstract class BaseItemCategory {
           transactionType: TransactionType.fee,
           amount: fx,
           messageClass: ClassMessage.financial,
-          transactionCode: args.transactionCode,
+          transactionCode: TransactionCode.feeCollection,
           card: args.card,
           itemCategory: this,
           currency: currency,
@@ -197,7 +188,7 @@ export abstract class BaseItemCategory {
           transactionType: TransactionType.vat,
           amount: fxVAT,
           messageClass: ClassMessage.financial,
-          transactionCode: args.transactionCode,
+          transactionCode: transactionCode,
           card: args.card,
           itemCategory: this,
           currency: currency,
@@ -215,6 +206,7 @@ export abstract class BaseItemCategory {
       if (this.isPartialRefund) {
         amount = Math.random() * amount;
       }
+      const code = this.refundTransactionCode();
 
       if ((this.hasAuth || this.isDirectSettlment) && !this.hasSettlement) {
         // should add reversal webhook
@@ -222,7 +214,7 @@ export abstract class BaseItemCategory {
           transactionType: args.transactionType,
           amount: amount,
           messageClass: ClassMessage.reversalOrChargeBack,
-          transactionCode: args.transactionCode,
+          transactionCode: code,
           card: args.card,
           itemCategory: this,
           currency: this.getCurrency(),
@@ -239,13 +231,13 @@ export abstract class BaseItemCategory {
           transactionType: args.transactionType,
           amount: amount,
           messageClass: ClassMessage.reversalOrChargeBack,
-          transactionCode: args.transactionCode,
+          transactionCode: code,
           card: args.card,
           itemCategory: this,
           currency: this.getCurrency(),
           transactionDate: args.date,
         });
-        transaction.setChildOf(auth);
+        transaction.setChildOf(auth ?? settlement);
         transactions.push(transaction.asRow());
 
         // fees
@@ -254,7 +246,7 @@ export abstract class BaseItemCategory {
             transactionType: TransactionType.fee,
             amount: fee,
             messageClass: ClassMessage.reversalOrChargeBack,
-            transactionCode: args.transactionCode,
+            transactionCode: TransactionCode.feeCollection,
             card: args.card,
             itemCategory: this,
             currency: transaction.currency,
@@ -264,14 +256,14 @@ export abstract class BaseItemCategory {
             transactionType: TransactionType.vat,
             amount: feeVAT,
             messageClass: ClassMessage.reversalOrChargeBack,
-            transactionCode: args.transactionCode,
+            transactionCode: code,
             card: args.card,
             itemCategory: this,
             currency: transaction.currency,
             transactionDate: args.date,
           });
 
-          fees.setChildOf(auth);
+          fees.setChildOf(auth ?? settlement);
           vat.setChildOf(fees);
 
           transactions.push(fees.asRow());
@@ -284,7 +276,7 @@ export abstract class BaseItemCategory {
             transactionType: TransactionType.fee,
             amount: fx,
             messageClass: ClassMessage.reversalOrChargeBack,
-            transactionCode: args.transactionCode,
+            transactionCode: TransactionCode.feeCollection,
             card: args.card,
             itemCategory: this,
             currency: transaction.currency,
@@ -294,7 +286,7 @@ export abstract class BaseItemCategory {
             transactionType: TransactionType.vat,
             amount: fxVAT,
             messageClass: ClassMessage.reversalOrChargeBack,
-            transactionCode: args.transactionCode,
+            transactionCode: code,
             card: args.card,
             itemCategory: this,
             currency: transaction.currency,
@@ -332,6 +324,10 @@ export abstract class BaseItemCategory {
   isRefund(): boolean {
     return this.isFullRefund || this.isPartialRefund;
   }
+
+  abstract transactionCode(): TransactionCode;
+
+  abstract refundTransactionCode(): TransactionCode;
 }
 
 export class CardLoad extends BaseItemCategory {
@@ -353,6 +349,13 @@ export class CardLoad extends BaseItemCategory {
   getFee(amount: number): number {
     throw new Error("Method not implemented.");
   }
+
+  transactionCode(): TransactionCode {
+    return TransactionCode.cashIn;
+  }
+  refundTransactionCode(): TransactionCode {
+    return this.transactionCode();
+  }
 }
 
 export class CardUnLoad extends BaseItemCategory {
@@ -373,5 +376,11 @@ export class CardUnLoad extends BaseItemCategory {
   }
   getFee(amount: number): number {
     throw new Error("Method not implemented.");
+  }
+  transactionCode(): TransactionCode {
+    return TransactionCode.cashIn;
+  }
+  refundTransactionCode(): TransactionCode {
+    return this.transactionCode();
   }
 }

@@ -89,7 +89,9 @@ export class Transaction {
 
   setChildOf(transaction?: Transaction) {
     if (transaction == null) return;
-    this.authorizationTransactionLogID = transaction.transactionID;
+    if (transaction.transactionID.startsWith("T15")) {
+      this.authorizationTransactionLogID = transaction.transactionID;
+    }
     this.authIdResponse = transaction.authIdResponse;
     this.handleTransactionID(transaction.transactionID);
   }
@@ -174,10 +176,10 @@ export class Transaction {
       this.reference ?? "", // <- Reference
       "0", // <- Original Transaction Id
       "", // <- Original Transaction Reference
-      "0", // <- Balance Before
-      surplusBefore.toFixed(2), // <- Surplus Before
-      "0", // <- Balance After
-      surplusAfter.toFixed(2), // <- Surplus After
+      surplusBefore < 0 ? surplusBefore.toFixed(2) : "0", // <- Balance Before
+      surplusBefore < 0 ? "0" : surplusBefore.toFixed(2), // <- Surplus Before
+      surplusAfter < 0 ? surplusAfter.toFixed(2) : "0", // <- Balance After
+      surplusAfter < 0 ? "0" : surplusAfter.toFixed(2), // <- Surplus After
       this.messageClass == ClassMessage.reversalOrChargeBack ? "C" : "D", // <- Credit Debit (C | D)
       "0", // <- Application Sequence
     ].join(",");

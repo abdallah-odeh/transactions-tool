@@ -1,4 +1,4 @@
-import { Currencies } from "../../transaction_type";
+import { Currencies, TransactionCode } from "../../transaction_type";
 import { BaseItemCategory } from "../base_item_category";
 
 export abstract class BaseInternationalPurchase extends BaseItemCategory {
@@ -28,6 +28,14 @@ export abstract class BaseInternationalPurchase extends BaseItemCategory {
   getFee(amount: number): number {
     return 0;
   }
+
+  transactionCode(): TransactionCode {
+    return TransactionCode.purchase;
+  }
+
+  refundTransactionCode(): TransactionCode {
+    return this.transactionCode();
+  }
 }
 
 export class InternationalPurchase extends BaseInternationalPurchase {
@@ -44,7 +52,9 @@ export class InternationalPurchase extends BaseInternationalPurchase {
 }
 
 export class InternationalPurchaseReversal extends BaseInternationalPurchase {
-  constructor() {
+  changeTransactionCode: boolean;
+
+  constructor(args: { changeTransactionCode: boolean }) {
     super({
       hasAuth: true,
       hasSettlement: false,
@@ -53,10 +63,21 @@ export class InternationalPurchaseReversal extends BaseInternationalPurchase {
       isPartialRefund: false,
       code: "0008",
     });
+    this.changeTransactionCode = args.changeTransactionCode;
+  }
+  refundTransactionCode(): TransactionCode {
+    if (this.changeTransactionCode) return TransactionCode.return;
+    return super.refundTransactionCode();
+  }
+
+  displayName(): string {
+    return `${super.displayName()} (Transaction code ${this.refundTransactionCode()})`;
   }
 }
 export class InternationalPurchasePartialRefund extends BaseInternationalPurchase {
-  constructor() {
+  changeTransactionCode: boolean;
+
+  constructor(args: { changeTransactionCode: boolean }) {
     super({
       hasAuth: false,
       hasSettlement: true,
@@ -65,10 +86,21 @@ export class InternationalPurchasePartialRefund extends BaseInternationalPurchas
       isPartialRefund: true,
       code: "0009",
     });
+    this.changeTransactionCode = args.changeTransactionCode;
+  }
+  refundTransactionCode(): TransactionCode {
+    if (this.changeTransactionCode) return TransactionCode.return;
+    return super.refundTransactionCode();
+  }
+
+  displayName(): string {
+    return `${super.displayName()} (Transaction code ${this.refundTransactionCode()})`;
   }
 }
 export class InternationalPurchaseFullRefund extends BaseInternationalPurchase {
-  constructor() {
+  changeTransactionCode: boolean;
+
+  constructor(args: { changeTransactionCode: boolean }) {
     super({
       hasAuth: false,
       hasSettlement: true,
@@ -77,5 +109,14 @@ export class InternationalPurchaseFullRefund extends BaseInternationalPurchase {
       isPartialRefund: false,
       code: "0009",
     });
+    this.changeTransactionCode = args.changeTransactionCode;
+  }
+  refundTransactionCode(): TransactionCode {
+    if (this.changeTransactionCode) return TransactionCode.return;
+    return super.refundTransactionCode();
+  }
+
+  displayName(): string {
+    return `${super.displayName()} (Transaction code ${this.refundTransactionCode()})`;
   }
 }

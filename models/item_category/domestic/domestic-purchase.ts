@@ -1,4 +1,4 @@
-import { Currencies } from "../../transaction_type";
+import { Currencies, TransactionCode } from "../../transaction_type";
 import { BaseItemCategory } from "../base_item_category";
 
 export abstract class BaseLocalPurchase extends BaseItemCategory {
@@ -28,6 +28,14 @@ export abstract class BaseLocalPurchase extends BaseItemCategory {
   getFee(amount: number): number {
     return 0;
   }
+
+  transactionCode(): TransactionCode {
+    return TransactionCode.purchase;
+  }
+
+  refundTransactionCode(): TransactionCode {
+    return this.transactionCode();
+  }
 }
 
 export class LocalPurchaseAuthSettlment extends BaseLocalPurchase {
@@ -56,7 +64,9 @@ export class LocalPurchaseAuth extends BaseLocalPurchase {
   }
 }
 export class LocalPurchaseReversal extends BaseLocalPurchase {
-  constructor() {
+  changeTransactionCode: boolean;
+
+  constructor(args: { changeTransactionCode: boolean }) {
     super({
       hasAuth: true,
       hasSettlement: false,
@@ -65,10 +75,23 @@ export class LocalPurchaseReversal extends BaseLocalPurchase {
       isPartialRefund: false,
       code: "0003",
     });
+    this.changeTransactionCode = args.changeTransactionCode;
+  }
+
+  refundTransactionCode(): TransactionCode {
+    if (this.changeTransactionCode) return TransactionCode.return;
+    return super.refundTransactionCode();
+  }
+
+  displayName(): string {
+    return `${super.displayName()} (Transaction code ${this.refundTransactionCode()})`;
   }
 }
+
 export class LocalPurchasePartialRefund extends BaseLocalPurchase {
-  constructor() {
+  changeTransactionCode: boolean;
+
+  constructor(args: { changeTransactionCode: boolean }) {
     super({
       hasAuth: false,
       hasSettlement: true,
@@ -77,10 +100,21 @@ export class LocalPurchasePartialRefund extends BaseLocalPurchase {
       isPartialRefund: true,
       code: "0005",
     });
+    this.changeTransactionCode = args.changeTransactionCode;
+  }
+
+  refundTransactionCode(): TransactionCode {
+    if (this.changeTransactionCode) return TransactionCode.return;
+    return super.refundTransactionCode();
+  }
+
+  displayName(): string {
+    return `${super.displayName()} (Transaction code ${this.refundTransactionCode()})`;
   }
 }
 export class LocalPurchaseFullRefund extends BaseLocalPurchase {
-  constructor() {
+  changeTransactionCode: boolean;
+  constructor(args: { changeTransactionCode: boolean }) {
     super({
       hasAuth: false,
       hasSettlement: true,
@@ -89,5 +123,14 @@ export class LocalPurchaseFullRefund extends BaseLocalPurchase {
       isPartialRefund: false,
       code: "0005",
     });
+    this.changeTransactionCode = args.changeTransactionCode;
+  }
+  refundTransactionCode(): TransactionCode {
+    if (this.changeTransactionCode) return TransactionCode.return;
+    return super.refundTransactionCode();
+  }
+
+  displayName(): string {
+    return `${super.displayName()} (Transaction code ${this.refundTransactionCode()})`;
   }
 }
