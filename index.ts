@@ -231,7 +231,7 @@ const convertWebhooksToTransactions = async () => {
       webhook.currency, //SAR // <- Settlement currency
       webhook.date, // <- System date
       webhook.accountNumber, // <- Account number
-      webhook.accountId, // <- Account id
+      '', // <- Account id
       webhook.cardId ?? "", // <- VPAN
       webhook.cardMaskedNumber ?? "", // <- Masked VPAN
       webhook.date, // <- Date transmit
