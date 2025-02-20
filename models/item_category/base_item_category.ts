@@ -145,7 +145,7 @@ export abstract class BaseItemCategory {
       // fees
       if (fee > 0) {
         const fees = new Transaction({
-          transactionType: TransactionType.fee,
+          transactionType: TransactionType.commission,
           amount: fee,
           messageClass: ClassMessage.financial,
           transactionCode: TransactionCode.feeCollection,
@@ -175,7 +175,7 @@ export abstract class BaseItemCategory {
       // conversion rate
       if (fx > 0) {
         const fees = new Transaction({
-          transactionType: TransactionType.fee,
+          transactionType: TransactionType.commission,
           amount: fx,
           messageClass: ClassMessage.financial,
           transactionCode: TransactionCode.feeCollection,
@@ -243,7 +243,7 @@ export abstract class BaseItemCategory {
         // fees
         if (fee > 0) {
           const fees = new Transaction({
-            transactionType: TransactionType.fee,
+            transactionType: TransactionType.commission,
             amount: fee,
             messageClass: ClassMessage.reversalOrChargeBack,
             transactionCode: TransactionCode.feeCollection,
@@ -273,7 +273,7 @@ export abstract class BaseItemCategory {
         // conversion rate
         if (fx > 0) {
           const fees = new Transaction({
-            transactionType: TransactionType.fee,
+            transactionType: TransactionType.commission,
             amount: fx,
             messageClass: ClassMessage.reversalOrChargeBack,
             transactionCode: TransactionCode.feeCollection,

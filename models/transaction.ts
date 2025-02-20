@@ -49,9 +49,9 @@ export class Transaction {
     this.rrn = now;
     this.itemCategory = options.itemCategory;
     if (options?.prepareAsWebhook == true) {
-      this.transactionID = `T15${now.substring(now.length - 4, now.length)}`;
+      this.transactionID = `15${now.substring(now.length - 4, now.length)}`;
     } else {
-      this.transactionID = `T12${now.substring(now.length - 4, now.length)}`;
+      this.transactionID = `12${now.substring(now.length - 4, now.length)}`;
     }
     this.date = DateFormatterHelper.format(
       options.transactionDate ?? new Date(),
@@ -89,7 +89,7 @@ export class Transaction {
 
   setChildOf(transaction?: Transaction) {
     if (transaction == null) return;
-    if (transaction.transactionID.startsWith("T15")) {
+    if (transaction.transactionID.startsWith("15") && transaction.messageClass == ClassMessage.authorization) {
       this.authorizationTransactionLogID = transaction.transactionID;
     }
     this.authIdResponse = transaction.authIdResponse;
@@ -193,10 +193,15 @@ export class Transaction {
     }
     const otb =
       args.otb ?? this.card.balance - this.amount + args.fees + args.vatOnFees;
+
+    const transactionId = this.transactionID.startsWith("T")
+      ? this.transactionID
+      : `T${this.transactionID}`;
+
     return {
       InstId: "9000",
       cardId: this.card?.vpan ?? "",
-      transactionId: `T${this.transactionID}`,
+      transactionId: transactionId,
       parentTransactionId: this.reference,
       cardMaskedNumber: this.card?.masked_pan ?? "",
       accountNumber: this.card?.account_number,

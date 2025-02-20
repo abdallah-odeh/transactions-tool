@@ -238,7 +238,7 @@ const convertWebhooksToTransactions = async () => {
       webhook.time, // <- Time transmit
       webhook.date, // <- Date local
       webhook.time, // <- Time local
-      webhook.messageClass ?? "", // <- Message class
+      webhook.messageClass ?? "2", // <- Message class
       "2", // <- Message function
       "0", // <- Transaction source
       "00200", // <- Function code
