@@ -200,15 +200,20 @@ export class Transaction {
     const otb =
       args.otb ?? this.card.balance - this.amount + args.fees + args.vatOnFees;
 
-    const transactionId = this.transactionID.startsWith("T")
-      ? this.transactionID
-      : `T${this.transactionID}`;
+    const fixTransactionID = (transactionID?: string): string | undefined => {
+      if (transactionID === undefined) return undefined;
+      if (transactionID.length == 0) return undefined;
+      if (transactionID.startsWith("T")) {
+        return transactionID;
+      }
+      return `T${transactionID}`;
+    };
 
     return {
       InstId: "9000",
       cardId: this.card?.vpan ?? "",
-      transactionId: transactionId,
-      parentTransactionId: this.reference,
+      transactionId: fixTransactionID(this.transactionID),
+      parentTransactionId: fixTransactionID(this.reference),
       cardMaskedNumber: this.card?.masked_pan ?? "",
       accountNumber: this.card?.account_number,
       Date: this.date,

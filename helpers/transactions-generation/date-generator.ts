@@ -29,13 +29,13 @@ export const DatesGenerator = {
 
     range.sort();
 
-    const start = DateFormatterHelper.tryParse(range[0]);
+    const start = DateFormatterHelper.tryParse(range[0].trim());
     if (start == null) {
       console.error("Invalid start date\n");
       return DatesGenerator.generate();
     }
 
-    const end = DateFormatterHelper.tryParse(range[1]);
+    const end = DateFormatterHelper.tryParse(range[1].trim());
     if (end == null) {
       console.error("Invalid end date\n");
       return DatesGenerator.generate();
