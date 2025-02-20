@@ -65,7 +65,7 @@ export class Transaction {
   }
 
   handleTransactionID(transactionId?: string) {
-    // console.log(`=========================\nhandling ${transactionId}`);
+    console.log(`=========================\nhandling ${transactionId}`);
     // if (transactionId) console.log("if (transactionId)");
     // else console.log("else (transactionId)");
 
@@ -78,18 +78,22 @@ export class Transaction {
     // console.log(`handling ${transactionId}\n=========================`);
     if (transactionId == undefined || transactionId.length == 0) return;
     switch (transactionId!.toUpperCase().substring(0, 1)) {
-      case "T":
-        this.reference = transactionId;
-        break;
       case "C":
         this.transactionID = transactionId!;
+        break;
+      case "T":
+      default:
+        this.reference = transactionId;
         break;
     }
   }
 
   setChildOf(transaction?: Transaction) {
     if (transaction == null) return;
-    if (transaction.transactionID.startsWith("15") && transaction.messageClass == ClassMessage.authorization) {
+    if (
+      transaction.transactionID.startsWith("15") &&
+      transaction.messageClass == ClassMessage.authorization
+    ) {
       this.authorizationTransactionLogID = transaction.transactionID;
     }
     this.authIdResponse = transaction.authIdResponse;
@@ -116,6 +120,8 @@ export class Transaction {
       surplusBefore = surplusAfter;
       surplusAfter = temp;
     }
+
+    this.card.balance = this.card.balance - this.amount;
 
     return [
       "R", // <- Record type

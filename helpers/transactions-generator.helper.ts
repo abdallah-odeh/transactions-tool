@@ -59,8 +59,6 @@ export const TransactionsGeneratorHelper = {
         }`
       );
 
-      card.balance = card.balance - amount;
-
       file!.transactions.push(...transaction.transactions);
       await appendWebhook(transaction.webhooks);
     }
