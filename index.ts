@@ -205,6 +205,8 @@ const convertWebhooksToTransactions = async () => {
   const isLoadUnload = type == 0;
   const isTopup = type == 1;
 
+  const accounts = new Array<string>();
+
   for (var i = 0; i < webhooks.length; i++) {
     const webhook = webhooks[i];
     const now = process.hrtime.bigint().toString();
@@ -218,6 +220,8 @@ const convertWebhooksToTransactions = async () => {
     let surplusBefore =
       Number.parseFloat(webhook.otb) + Number.parseFloat(webhook.amount);
     const surplusAfter = Number.parseFloat(webhook.otb);
+    let reference = webhook.parentTransactionId ?? webhook.transactionId ?? "";
+    const accountNumber = webhook.accountNumber;
     if (isLoadUnload) {
       if (webhook.transactionCode == "4000") {
         transactionType = "1";
@@ -236,6 +240,7 @@ const convertWebhooksToTransactions = async () => {
       cardAcceptorLocation = `2701~~          ${webhook.currency}`;
       cardAcceptorId = "RIBLSARIXXX";
       acquirerFinancialEntity = "OLFE";
+      reference = '';
     } else {
       if (webhook.transactionCode == "0") {
         transactionType = "0";
@@ -271,7 +276,7 @@ const convertWebhooksToTransactions = async () => {
       webhook.amount, // <- Settlement amount
       webhook.currency, //SAR // <- Settlement currency
       webhook.date, // <- System date
-      webhook.accountNumber, // <- Account number
+      accountNumber, // <- Account number
       "", // <- Account id
       webhook.cardId ?? "", // <- VPAN
       webhook.cardMaskedNumber ?? "", // <- Masked VPAN
@@ -309,7 +314,7 @@ const convertWebhooksToTransactions = async () => {
       "", // <- Cardholder Authentication Method
       "", // <- Cardholder authorization Entity
       "", // <- Pin Capture Capability
-      webhook.parentTransactionId ?? webhook.transactionId ?? "", // <- Reference
+      reference, // <- Reference
       "0", // <- Original Transaction Id
       "", // <- Original Transaction Reference
       surplusBefore < 0 ? surplusBefore.toFixed(2) : "0", // <- Balance Before
@@ -317,10 +322,11 @@ const convertWebhooksToTransactions = async () => {
       surplusAfter < 0 ? surplusAfter.toFixed(2) : "0", // <- Balance After
       surplusAfter < 0 ? "0" : surplusAfter.toFixed(2), // <- Surplus After
       webhook.sign == "C" ? "C" : "D", // <- Credit Debit (C | D)
-      "0", // <- Application Sequence
+      accounts.filter(e => e == accountNumber).length.toString(), // <- Application Sequence
     ].join(",");
 
     transactions.push(row);
+    accounts.push(accountNumber);
   }
   const footer = [
     "F",
