@@ -70,6 +70,7 @@ export const CSVParser = {
       // Parse each row in the fixed-length data
       data.split("\n").forEach((line) => {
         if (line.trim().length == 0) return;
+        if (line.toUpperCase().startsWith('H')) return;
         let row = "";
         let start = 0;
 

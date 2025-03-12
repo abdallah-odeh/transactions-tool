@@ -86,7 +86,7 @@ const convertFixedLengthFile = async () => {
   const txt = await ConsoleHelper.read("Enter .txt file path: ");
   if (txt.length == 0) return convertFixedLengthFile();
   if (!txt.endsWith("txt")) {
-    console.error("File must be .csv");
+    console.error("File must be .txt");
     return convertFixedLengthFile();
   }
 
