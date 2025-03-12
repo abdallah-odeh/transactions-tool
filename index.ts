@@ -192,8 +192,18 @@ const convertWebhooksToTransactions = async () => {
   const header = columns.map((e) => e[0]).join(",");
   const transactions = [header];
 
-  const categories = [new CardLoad(), new CardUnLoad()];
-  const transactionsCodes = [TransactionCode.cashIn, TransactionCode.cashOut];
+  const conversionTypes = ["Load/Unload", "Account topup", "Other"];
+  var type;
+  do {
+    for (var i = 0; i < conversionTypes.length; i++) {
+      console.log(`${i + 1}. ${conversionTypes[i]}`);
+    }
+    const input = await ConsoleHelper.read("What is the webhook type?");
+    type = Number.parseInt(input ?? "") - 1;
+  } while (type >= conversionTypes.length || type < 0);
+
+  const isLoadUnload = type == 0;
+  const isTopup = type == 1;
 
   for (var i = 0; i < webhooks.length; i++) {
     const webhook = webhooks[i];
@@ -201,21 +211,52 @@ const convertWebhooksToTransactions = async () => {
 
     let transactionType = "1";
     let description = "Converted transaction";
-    if (webhook.transactionCode == "4000") {
-      transactionType = "1";
-      description = "Cash in";
-    } else if (webhook.transactionCode == "4001") {
-      transactionType = "1";
-      description = "Cash in";
-    } else if (webhook.transactionCode == "0") {
-      transactionType = "0";
-      description = "Converted purchase";
-    } else if (webhook.transactionCode == "19") {
-      transactionType = "0";
-      description = "Converted fee collection";
-    } else if (webhook.transactionCode == "26") {
-      transactionType = "1";
-      description = "Converted payment to card holder";
+    let cardAcceptorLocation = `CARD ACCEPTOR~ATM Riyadh~CITY NAME~             ${webhook.currency}`;
+    let cardAcceptorId = "";
+    let acquirerFinancialEntity = "";
+    let acquirerCountry = webhook.currency;
+    let surplusBefore =
+      Number.parseFloat(webhook.otb) + Number.parseFloat(webhook.amount);
+    const surplusAfter = Number.parseFloat(webhook.otb);
+    if (isLoadUnload) {
+      if (webhook.transactionCode == "4000") {
+        transactionType = "1";
+        description = "Card Load";
+        cardAcceptorLocation = '';
+        acquirerCountry = "";
+      } else if (webhook.transactionCode == "4001") {
+        transactionType = "1";
+        description = "Card Load";
+        cardAcceptorLocation = '';
+        acquirerCountry = "";
+      }
+    } else if (isTopup) {
+      transactionType = "5";
+      description = "VAIPS/RIBLSARIXXX/20250303SARIBLRIBL6BTM";
+      cardAcceptorLocation = `2701~~          ${webhook.currency}`;
+      cardAcceptorId = "RIBLSARIXXX";
+      acquirerFinancialEntity = "OLFE";
+    } else {
+      if (webhook.transactionCode == "0") {
+        transactionType = "0";
+        description = "Converted purchase";
+      } else if (webhook.transactionCode == "19") {
+        transactionType = "0";
+        description = "Converted fee collection";
+      } else if (webhook.transactionCode == "26") {
+        transactionType = "1";
+        description = "Converted payment to card holder";
+      }
+    }
+
+    if (webhook.sign != null) {
+      if (webhook.sign == "C") {
+        surplusBefore =
+          Number.parseFloat(webhook.otb) - Number.parseFloat(webhook.amount);
+      } else if (webhook.sign == "D") {
+        surplusBefore =
+          Number.parseFloat(webhook.otb) + Number.parseFloat(webhook.amount);
+      }
     }
 
     const row = [
@@ -231,7 +272,7 @@ const convertWebhooksToTransactions = async () => {
       webhook.currency, //SAR // <- Settlement currency
       webhook.date, // <- System date
       webhook.accountNumber, // <- Account number
-      '', // <- Account id
+      "", // <- Account id
       webhook.cardId ?? "", // <- VPAN
       webhook.cardMaskedNumber ?? "", // <- Masked VPAN
       webhook.date, // <- Date transmit
@@ -243,7 +284,7 @@ const convertWebhooksToTransactions = async () => {
       "0", // <- Transaction source
       "00200", // <- Function code
       webhook.transactionCode, // <- Transaction Code
-      "", // <- Acquirer Financial Entity
+      acquirerFinancialEntity, // <- Acquirer Financial Entity
       "", // <- Transaction Reference Number
       "", // <- ARN
       "", // <- Token Requestor ID
@@ -252,12 +293,12 @@ const convertWebhooksToTransactions = async () => {
       webhook.rrn ?? now, // <- RRN
       webhook.stan ?? "0", // <- STAN
       description, // <- Description
-      `CARD ACCEPTOR~ATM Riyadh~CITY NAME~             ${webhook.currency}`, // <- Card Acceptor Location
+      cardAcceptorLocation, // <- Card Acceptor Location
       "0", // <- MCC
-      "", // <- Card Acceptor ID
+      cardAcceptorId, // <- Card Acceptor ID
       "", // <- Terminal Code
       "", // <- Acquirer ID
-      "", // <- Acquirer Country
+      acquirerCountry, // <- Acquirer Country
       "", // <- Card Data Input Capability
       "", // <- Cardholder Authentication Availability
       "", // <- Card Capture Capability
@@ -271,10 +312,10 @@ const convertWebhooksToTransactions = async () => {
       webhook.parentTransactionId ?? webhook.transactionId ?? "", // <- Reference
       "0", // <- Original Transaction Id
       "", // <- Original Transaction Reference
-      "0", // <- Balance Before
-      Number.parseFloat(webhook.otb) + Number.parseFloat(webhook.amount), // <- Surplus Before
-      "0", // <- Balance After
-      webhook.otb, // <- Surplus After
+      surplusBefore < 0 ? surplusBefore.toFixed(2) : "0", // <- Balance Before
+      surplusBefore < 0 ? "0" : surplusBefore.toFixed(2), // <- Surplus Before
+      surplusAfter < 0 ? surplusAfter.toFixed(2) : "0", // <- Balance After
+      surplusAfter < 0 ? "0" : surplusAfter.toFixed(2), // <- Surplus After
       webhook.sign == "C" ? "C" : "D", // <- Credit Debit (C | D)
       "0", // <- Application Sequence
     ].join(",");

@@ -22,6 +22,7 @@ export enum ClassMessage {
 export enum TransactionCode {
   purchase = 0,
   cash = 1,
+  fundLoad = 5,
   feeCollection = 19,
   return = 20,
   paymentToCardholder = 26,
