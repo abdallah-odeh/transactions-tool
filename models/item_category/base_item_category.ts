@@ -13,6 +13,7 @@ export type TransactionParams = {
   card: any;
   date?: Date;
   currency?: Currencies;
+  applicationSequance: number,
 };
 
 export type Records = {
@@ -140,7 +141,7 @@ export abstract class BaseItemCategory {
         transactionDate: args.date,
       });
       settlement.setChildOf(auth);
-      transactions.push(settlement.asRow());
+      transactions.push(settlement.asRow(args.applicationSequance + transactions.length));
 
       // fees
       if (fee > 0) {
@@ -168,8 +169,8 @@ export abstract class BaseItemCategory {
         fees.setChildOf(auth);
         vat.setChildOf(fees);
 
-        transactions.push(fees.asRow());
-        transactions.push(vat.asRow());
+        transactions.push(fees.asRow(args.applicationSequance + transactions.length));
+        transactions.push(vat.asRow(args.applicationSequance + transactions.length));
       }
 
       // conversion rate
@@ -198,8 +199,8 @@ export abstract class BaseItemCategory {
         fees.setChildOf(auth);
         vat.setChildOf(fees);
 
-        transactions.push(fees.asRow());
-        transactions.push(vat.asRow());
+        transactions.push(fees.asRow(args.applicationSequance + transactions.length));
+        transactions.push(vat.asRow(args.applicationSequance + transactions.length));
       }
     }
     if (this.isRefund()) {
@@ -238,7 +239,7 @@ export abstract class BaseItemCategory {
           transactionDate: args.date,
         });
         transaction.setChildOf(auth ?? settlement);
-        transactions.push(transaction.asRow());
+        transactions.push(transaction.asRow(args.applicationSequance + transactions.length));
 
         // fees
         if (fee > 0) {
@@ -266,8 +267,8 @@ export abstract class BaseItemCategory {
           fees.setChildOf(auth ?? settlement);
           vat.setChildOf(fees);
 
-          transactions.push(fees.asRow());
-          transactions.push(vat.asRow());
+          transactions.push(fees.asRow(args.applicationSequance + transactions.length));
+          transactions.push(vat.asRow(args.applicationSequance + transactions.length));
         }
 
         // conversion rate
@@ -296,8 +297,8 @@ export abstract class BaseItemCategory {
           fees.setChildOf(auth);
           vat.setChildOf(fees);
 
-          transactions.push(fees.asRow());
-          transactions.push(vat.asRow());
+          transactions.push(fees.asRow(args.applicationSequance + transactions.length));
+          transactions.push(vat.asRow(args.applicationSequance + transactions.length));
         }
       }
     }

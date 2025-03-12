@@ -65,7 +65,6 @@ export class Transaction {
   }
 
   handleTransactionID(transactionId?: string) {
-    console.log(`=========================\nhandling ${transactionId}`);
     // if (transactionId) console.log("if (transactionId)");
     // else console.log("else (transactionId)");
 
@@ -100,7 +99,7 @@ export class Transaction {
     this.handleTransactionID(transaction.transactionID);
   }
 
-  asRow(): string {
+  asRow(applicationSequance: number): string {
     let surplusBefore = 0;
     let surplusAfter = 0;
     if (this.card.balance) {
@@ -187,7 +186,7 @@ export class Transaction {
       surplusAfter < 0 ? surplusAfter.toFixed(2) : "0", // <- Balance After
       surplusAfter < 0 ? "0" : surplusAfter.toFixed(2), // <- Surplus After
       this.messageClass == ClassMessage.reversalOrChargeBack ? "C" : "D", // <- Credit Debit (C | D)
-      "0", // <- Application Sequence
+      applicationSequance, // <- Application Sequence
     ].join(",");
   }
 

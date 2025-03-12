@@ -21,6 +21,7 @@ export const TransactionsGeneratorHelper = {
     console.log("\n=========================");
 
     const files: TransactionsFile[] = [];
+    const accounts: string[] = [];
 
     for (var i = 0; i < options.records; i++) {
       const card = generate(options.cards);
@@ -51,6 +52,8 @@ export const TransactionsGeneratorHelper = {
         transactionType: generate(transactionTypes),
         card: card,
         date: date,
+        applicationSequance: accounts.filter((e) => e == card.account_number)
+          .length,
       });
 
       console.log(
@@ -61,6 +64,10 @@ export const TransactionsGeneratorHelper = {
 
       file!.transactions.push(...transaction.transactions);
       await appendWebhook(transaction.webhooks);
+
+      for (var t = 0; t < transaction.transactions.length; t++) {
+        accounts.push(card.account_number);
+      }
     }
 
     for (var i = 0; i < files.length; i++) {
