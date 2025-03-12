@@ -22,6 +22,9 @@ export const DatesGenerator = {
     }
 
     const range = types.trim().replace(" ", "").split("-");
+    if (range.length == 1) {
+      range.push(...range);
+    }
     if (range.length != 2) {
       console.error("Invalid range\n");
       return DatesGenerator.generate();

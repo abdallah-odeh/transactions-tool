@@ -26,7 +26,7 @@ export const TransactionsGeneratorHelper = {
     for (var i = 0; i < options.records; i++) {
       const card = generate(options.cards);
       const amount =
-        Math.random() * (options.amount.max - options.amount.min + 1) +
+        Math.random() * (options.amount.max - options.amount.min) +
         options.amount.min;
 
       const date = new Date(
