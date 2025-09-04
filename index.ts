@@ -309,7 +309,7 @@ const convertWebhooksToTransactions = async () => {
           [
             "R", // <- Record type
             feeId,
-            TransactionType.fee,
+            TransactionType.commission,
             currency, // <- Transaction currency
             Math.abs(fees), // <- Transaction amount
             currency, // <- Billing currency
@@ -436,11 +436,9 @@ const convertWebhooksToTransactions = async () => {
 
     if (webhook.sign != null) {
       if (webhook.sign == "C") {
-        surplusBefore =
-          Number.parseFloat(webhook.otb) - Number.parseFloat(webhook.amount);
+        surplusBefore = parseFloat(webhook.otb) - amount;
       } else if (webhook.sign == "D") {
-        surplusBefore =
-          Number.parseFloat(webhook.otb) + Number.parseFloat(webhook.amount);
+        surplusBefore = parseFloat(webhook.otb) + amount;
       }
     }
 
