@@ -3,7 +3,9 @@ export function getRandomItem<T>(items: T[]): T {
   return items[randomIndex];
 }
 
-
+export function generateRandomId() : string {
+  return process.hrtime.bigint().toString();
+}
 //   enum Status {
 //     Pending = "PENDING",
 //     InProgress = "IN_PROGRESS",

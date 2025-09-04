@@ -25,9 +25,18 @@ export enum TransactionCode {
   fundLoad = 5,
   feeCollection = 19,
   return = 20,
+  deposit = 21, 
+  adjustmentDuplicate = 22,
+  ChequeDepositGuarantee = 23,
+  ChequeDeposit = 24,
   paymentToCardholder = 26,
+  ATMNightSafeDeposit = 27,
+  ATMCashIn = 28,
+  FundsDisbursement = 29,
+  TransferToCreditCard = 59,
   cashIn = 4001,
   cashOut = 4000,
+  
 }
 
 export enum ItemCategory {
