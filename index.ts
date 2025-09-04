@@ -225,6 +225,7 @@ const convertWebhooksToTransactions = async () => {
     const currency = webhook.currency ?? webhook.transactionCurrency;
     let acquirerCountry = currency;
     let cardAcceptorLocation = `CARD ACCEPTOR~ATM Riyadh~CITY NAME~             ${currency}`;
+    let messageClass = webhook.messageClass == '4' ? '4' : '2';
 
     let id = generateRandomId();
 
@@ -326,7 +327,7 @@ const convertWebhooksToTransactions = async () => {
             webhook.time, // <- Time transmit
             webhook.date, // <- Date local
             webhook.time, // <- Time local
-            webhook.messageClass ?? "2", // <- Message class
+            messageClass, // <- Message class
             "2", // <- Message function
             "0", // <- Transaction source
             "00200", // <- Function code
@@ -389,7 +390,7 @@ const convertWebhooksToTransactions = async () => {
             webhook.time, // <- Time transmit
             webhook.date, // <- Date local
             webhook.time, // <- Time local
-            webhook.messageClass ?? "2", // <- Message class
+            messageClass, // <- Message class
             "2", // <- Message function
             "0", // <- Transaction source
             "00200", // <- Function code
@@ -462,7 +463,7 @@ const convertWebhooksToTransactions = async () => {
       webhook.time, // <- Time transmit
       webhook.date, // <- Date local
       webhook.time, // <- Time local
-      webhook.messageClass ?? "2", // <- Message class
+      messageClass, // <- Message class
       "2", // <- Message function
       "0", // <- Transaction source
       "00200", // <- Function code
