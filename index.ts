@@ -221,13 +221,21 @@ const convertWebhooksToTransactions = async () => {
     const surplusAfter = parseFloat(webhook.otb);
     let reference = webhook.parentTransactionId ?? authId ?? "";
     const accountNumber = webhook.accountNumber;
-    let amount = parseFloat(webhook.transactionAmount);
-    const currency = webhook.currency ?? webhook.transactionCurrency;
+    let amount = parseFloat(webhook.transactionAmount ?? webhook.amount);
+    let billingAmount = parseFloat(webhook.billingAmount) ?? amount;
+    const currency = webhook.currency ?? webhook.billingCurrency;
+    const transactionCurrency = webhook.transactionCurrency ?? currency;
     let acquirerCountry = currency;
     let cardAcceptorLocation = `CARD ACCEPTOR~ATM Riyadh~CITY NAME~             ${currency}`;
-    let messageClass = webhook.messageClass == '4' ? '4' : '2';
+    let messageClass = webhook.messageClass == "4" ? "4" : "2";
+    const date = webhook.date ?? webhook.Date;
+    const time = webhook.time ?? webhook.Time;
 
-    let id = generateRandomId();
+    if (currency == transactionCurrency) {
+      billingAmount = amount ?? billingAmount;
+    }
+
+    let id = generateRandomId({ length: 20 });
 
     let refundTransactionCodes = [
       TransactionCode.return,
@@ -292,12 +300,8 @@ const convertWebhooksToTransactions = async () => {
         if (shouldRevertFeesSign) {
           fees_debit = !fees_debit;
         }
-
-        console.log(
-          `should revert fees sign? ${fees} | ${vatOnFees} | shouldRevertFeesSign: ${shouldRevertFeesSign} | is_debit: ${is_debit} | fees_debit: ${fees_debit} | ${webhook.sign}`
-        );
-
-        let feeId = generateRandomId();
+        
+        let feeId = generateRandomId({ length: 20 });
 
         // if (is_debit) {
         //   surplusBefore = parseFloat(webhook.otb) + amount + Math.abs(fees);
@@ -315,18 +319,18 @@ const convertWebhooksToTransactions = async () => {
             Math.abs(fees), // <- Transaction amount
             currency, // <- Billing currency
             Math.abs(fees), // <- Billing amount
-            webhook.date, // <- Settlement date
+            formattedDate, // <- Settlement date
             Math.abs(fees), // <- Settlement amount
             currency, //SAR // <- Settlement currency
-            webhook.date, // <- System date
+            date, // <- System date
             accountNumber, // <- Account number
             "", // <- Account id
             webhook.cardId ?? "", // <- VPAN
             webhook.cardMaskedNumber ?? "", // <- Masked VPAN
-            webhook.date, // <- Date transmit
-            webhook.time, // <- Time transmit
-            webhook.date, // <- Date local
-            webhook.time, // <- Time local
+            date, // <- Date transmit
+            time, // <- Time transmit
+            date, // <- Date local
+            time, // <- Time local
             messageClass, // <- Message class
             "2", // <- Message function
             "0", // <- Transaction source
@@ -337,8 +341,8 @@ const convertWebhooksToTransactions = async () => {
             "", // <- ARN
             "", // <- Token Requestor ID
             "", // <- Authorization Transaction Log ID
-            webhook.transactionType, // <- Item Category
-            webhook.rrn ?? now, // <- RRN
+            "0123", // <- Item Category
+            now, // <- RRN
             webhook.stan ?? "0", // <- STAN
             description, // <- Description
             cardAcceptorLocation, // <- Card Acceptor Location
@@ -357,7 +361,7 @@ const convertWebhooksToTransactions = async () => {
             "", // <- Cardholder Authentication Method
             "", // <- Cardholder authorization Entity
             "", // <- Pin Capture Capability
-            id, // <- Reference
+            reference, // <- Reference
             "0", // <- Original Transaction Id
             "", // <- Original Transaction Reference
             surplusBefore < 0 ? surplusBefore.toFixed(2) : "0", // <- Balance Before
@@ -372,24 +376,24 @@ const convertWebhooksToTransactions = async () => {
         transactions.push(
           [
             "R", // <- Record type
-            feeId,
+            generateRandomId({ length: 20 }),
             TransactionType.vat,
             currency, // <- Transaction currency
             Math.abs(vatOnFees), // <- Transaction amount
             currency, // <- Billing currency
             Math.abs(vatOnFees), // <- Billing amount
-            webhook.date, // <- Settlement date
+            formattedDate, // <- Settlement date
             Math.abs(vatOnFees), // <- Settlement amount
             currency, //SAR // <- Settlement currency
-            webhook.date, // <- System date
+            date, // <- System date
             accountNumber, // <- Account number
             "", // <- Account id
             webhook.cardId ?? "", // <- VPAN
             webhook.cardMaskedNumber ?? "", // <- Masked VPAN
-            webhook.date, // <- Date transmit
-            webhook.time, // <- Time transmit
-            webhook.date, // <- Date local
-            webhook.time, // <- Time local
+            date, // <- Date transmit
+            time, // <- Time transmit
+            date, // <- Date local
+            time, // <- Time local
             messageClass, // <- Message class
             "2", // <- Message function
             "0", // <- Transaction source
@@ -400,8 +404,8 @@ const convertWebhooksToTransactions = async () => {
             "", // <- ARN
             "", // <- Token Requestor ID
             "", // <- Authorization Transaction Log ID
-            webhook.transactionType, // <- Item Category
-            webhook.rrn ?? now, // <- RRN
+            "0035", // <- Item Category
+            now, // <- RRN
             webhook.stan ?? "0", // <- STAN
             description, // <- Description
             cardAcceptorLocation, // <- Card Acceptor Location
@@ -447,22 +451,22 @@ const convertWebhooksToTransactions = async () => {
       "R", // <- Record type
       id,
       transactionType,
-      currency, // <- Transaction currency
+      transactionCurrency, // <- Transaction currency
       amount, // <- Transaction amount
       currency, // <- Billing currency
-      amount, // <- Billing amount
-      webhook.date, // <- Settlement date
+      billingAmount, // <- Billing amount
+      formattedDate, // <- Settlement date
       amount, // <- Settlement amount
       currency, //SAR // <- Settlement currency
-      webhook.date, // <- System date
+      date, // <- System date
       accountNumber, // <- Account number
       "", // <- Account id
       webhook.cardId ?? "", // <- VPAN
       webhook.cardMaskedNumber ?? "", // <- Masked VPAN
-      webhook.date, // <- Date transmit
-      webhook.time, // <- Time transmit
-      webhook.date, // <- Date local
-      webhook.time, // <- Time local
+      date, // <- Date transmit
+      time, // <- Time transmit
+      date, // <- Date local
+      time, // <- Time local
       messageClass, // <- Message class
       "2", // <- Message function
       "0", // <- Transaction source
