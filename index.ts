@@ -258,6 +258,8 @@ const convertWebhooksToTransactions = async () => {
       is_debit = !is_debit;
     }
 
+    if (messageClass == "4") is_debit = !is_debit;
+
     if (isLoadUnload) {
       if (webhook.transactionCode == "4000") {
         transactionType = "1";
@@ -300,7 +302,7 @@ const convertWebhooksToTransactions = async () => {
         if (shouldRevertFeesSign) {
           fees_debit = !fees_debit;
         }
-        
+
         let feeId = generateRandomId({ length: 20 });
 
         // if (is_debit) {
